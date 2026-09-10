@@ -20,16 +20,20 @@ jobs:
       - name: Baixar código do Git
         uses: actions/checkout@v6
 
-      - name: Mostrar arquivos encontrados
-        run: Get-ChildItem -Recurse
+      - name: Configurar Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
 
       - name: Verificar Python
         run: python --version
 
-      - name: Instalar Selenium
+      - name: Instalar dependências
         run: python -m pip install -r requirements.txt
 
-      - name: Executar teste
+      - name: Executar Selenium
         run: python -u teste_selenium.py
 
       - name: Guardar captura de tela
