@@ -1,0 +1,41 @@
+name: Teste Selenium - Google
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: rpa-windows-producao
+  cancel-in-progress: false
+
+jobs:
+  executar:
+    runs-on: [self-hosted, windows, x64]
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        shell: powershell
+        working-directory: testes
+
+    steps:
+      - name: Baixar código do Git
+        uses: actions/checkout@v6
+
+      - name: Verificar Python
+        run: python --version
+
+      - name: Instalar Selenium
+        run: python -m pip install -r requirements.txt
+
+      - name: Executar teste
+        run: python -u teste_selenium.py
+
+      - name: Guardar captura de tela
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultado-selenium
+          path: |
+            testes/resultado_capivara.png
+            testes/erro_selenium.png
+          if-no-files-found: ignore
