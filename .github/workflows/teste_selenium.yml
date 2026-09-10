@@ -15,11 +15,13 @@ jobs:
     defaults:
       run:
         shell: powershell
-        working-directory: testes
 
     steps:
       - name: Baixar código do Git
         uses: actions/checkout@v6
+
+      - name: Mostrar arquivos encontrados
+        run: Get-ChildItem -Recurse
 
       - name: Verificar Python
         run: python --version
@@ -32,10 +34,10 @@ jobs:
 
       - name: Guardar captura de tela
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: resultado-selenium
           path: |
-            testes/resultado_capivara.png
-            testes/erro_selenium.png
+            resultado_capivara.png
+            erro_selenium.png
           if-no-files-found: ignore
