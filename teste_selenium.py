@@ -1,56 +1,60 @@
 import sys
 import time
 
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from DrissionPage import Chromium, ChromiumOptions
 
 
 def executar() -> int:
-    print("Iniciando Google Chrome...", flush=True)
-
-    driver = webdriver.Chrome()
+    browser = None
 
     try:
-        print("Acessando o Google...", flush=True)
-        driver.get("https://www.google.com")
+        print("Configurando navegador...", flush=True)
 
-        print("Procurando campo de pesquisa...", flush=True)
-        search_box = WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.NAME, "q"))
-        )
+        opcoes = ChromiumOptions(read_file=False)
+        opcoes.auto_port()
+        opcoes.set_argument("--start-maximized")
+
+        # Use somente se o DrissionPage não localizar o Chrome:
+        # opcoes.set_browser_path(
+        #     r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+        # )
+
+        print("Iniciando Google Chrome...", flush=True)
+        browser = Chromium(opcoes)
+        pagina = browser.latest_tab
+
+        print("Acessando o Google...", flush=True)
+        pagina.get("https://www.google.com")
+
+        print("Localizando campo de pesquisa...", flush=True)
+        campo_pesquisa = pagina.ele("@name=q", timeout=20)
+
+        if not campo_pesquisa:
+            raise RuntimeError("Campo de pesquisa não encontrado.")
 
         print("Pesquisando por capivara...", flush=True)
-        search_box.send_keys("capivara" + Keys.ENTER)
+        campo_pesquisa.input("capivara\n")
 
-        WebDriverWait(driver, 20).until(
-            EC.presence_of_element_located((By.ID, "search"))
-        )
+        print("Aguardando resultados...", flush=True)
+        resultado = pagina.ele("#search", timeout=20)
 
-        print("Pesquisa concluída.", flush=True)
+        if not resultado:
+            raise RuntimeError("Resultados da pesquisa não foram carregados.")
+
+        print("Pesquisa concluída com sucesso.", flush=True)
 
         time.sleep(5)
-
-        driver.save_screenshot("resultado_capivara.png")
-        print("Captura de tela salva.", flush=True)
-
         return 0
 
-    except Exception:
-        print("Erro durante a automação.", flush=True)
-        driver.save_screenshot("erro_selenium.png")
-        raise
+    except Exception as erro:
+        print(f"Falha durante a automação: {erro}", flush=True)
+        return 1
 
     finally:
-        print("Fechando navegador...", flush=True)
-        driver.quit()
+        if browser is not None:
+            print("Fechando navegador...", flush=True)
+            browser.quit()
 
 
 if __name__ == "__main__":
-    try:
-        sys.exit(executar())
-    except Exception as erro:
-        print(f"Falha: {erro}", flush=True)
-        sys.exit(1)
+    sys.exit(executar())
