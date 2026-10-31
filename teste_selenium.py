@@ -1,9 +1,10 @@
 import sys
 import time
+from runtrail import step
 
 from DrissionPage import Chromium, ChromiumOptions
 
-
+@step("Iniciando com step")
 def executar() -> int:
     browser = None
 
